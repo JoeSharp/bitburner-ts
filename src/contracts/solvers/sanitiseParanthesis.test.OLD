@@ -1,0 +1,29 @@
+import { NS } from "@ns";
+import { mock } from "jest-mock-extended";
+import { sanitiseParenthesis } from "contracts/solvers/sanitiseParenthesis";
+
+interface TestCase {
+  inputs: string;
+  expected: string[];
+}
+
+const TEST_CASES: TestCase[] = [
+  {
+    inputs: "()())()",
+    expected: ["()()()", "(())()"],
+  },
+  {
+    inputs: "(a)())()",
+    expected: ["(a)()()", "(a())()"],
+  },
+];
+
+describe("Contract Solvers", () => {
+  TEST_CASES.forEach(({ inputs, expected }, i) => {
+    test(`Sanitise Parenthesis ${i}`, () => {
+      const mockNS = mock<NS>();
+      const result = sanitiseParenthesis(mockNS, inputs);
+      expected.forEach((e) => expect(result).toContain(e));
+    });
+  });
+});

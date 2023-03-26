@@ -1,0 +1,40 @@
+import { NS } from "@ns";
+import { mock } from "jest-mock-extended";
+import { minPathSumTriangle } from "./minPathSumTriangle";
+
+interface TestCase {
+  inputs: number[][];
+  expected: number;
+}
+
+const TEST_CASES: TestCase[] = [
+  {
+    inputs: [[2], [3, 4], [6, 5, 7], [4, 1, 8, 3]],
+    expected: 11, // (2 -> 3 -> 5 -> 1).
+  },
+  {
+    inputs: [
+      [6],
+      [3, 7],
+      [4, 1, 3],
+      [8, 2, 7, 5],
+      [7, 7, 5, 3, 2],
+      [7, 1, 2, 8, 9, 8],
+      [3, 1, 1, 8, 6, 9, 4],
+      [5, 8, 1, 1, 8, 8, 1, 6],
+      [6, 1, 8, 7, 8, 8, 7, 3, 2],
+      [7, 2, 5, 5, 6, 3, 3, 2, 2, 9],
+    ],
+    expected: 32,
+  },
+];
+
+describe("Contract Solvers", () => {
+  TEST_CASES.forEach(({ inputs, expected }, i) => {
+    test(`Min Path Sum Triangle ${i}`, () => {
+      const mockNS = mock<NS>();
+      const result = minPathSumTriangle(mockNS, inputs);
+      expect(result).toStrictEqual(expected);
+    });
+  });
+});
