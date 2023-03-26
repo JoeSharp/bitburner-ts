@@ -54,7 +54,8 @@ export function findContracts(ns: NS) {
 /** @param {NS} ns */
 export function solveContract(
   ns: NS,
-  { type, host, contract }: ContractRecord
+  { type, host, contract }: ContractRecord,
+  attempt: boolean = true
 ) {
   ns.print(`Found ${type} in ${contract} on ${host}`);
 
@@ -63,8 +64,12 @@ export function solveContract(
     ns.print("Solver Found");
     const data = ns.codingcontract.getData(contract, host);
     const answer = solver(ns, data);
-    const result = ns.codingcontract.attempt(answer, contract, host);
-    ns.print(`Contract Attempted with Result ${result}`);
+    if (attempt) {
+      const result = ns.codingcontract.attempt(answer, contract, host);
+      ns.print(`Contract Attempted with Result ${result}`);
+    } else {
+      ns.tprint(`Skipping the attempt, Answer Calcualted was ${answer}`);
+    }
   } else {
     ns.print("No solution for contract type");
   }
