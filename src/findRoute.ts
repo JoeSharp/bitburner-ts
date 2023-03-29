@@ -3,14 +3,14 @@ import { findHosts } from "./utils";
 
 /** @param {NS} ns */
 export async function main(ns: NS) {
-  const [target] = ns.args;
+  const [target] = ns.args as [string];
 
   const { foundVia } = await findHosts(ns);
 
   const here = ns.getHostname();
 
   let current = target;
-  const hops = [];
+  const hops: string[] = [];
   while (!!current && current !== here) {
     hops.push(current);
     current = foundVia.get(current);
@@ -21,4 +21,8 @@ export async function main(ns: NS) {
   ns.tprint(`Route from ${here} to ${target}`);
   hops.reverse();
   hops.forEach((h) => ns.tprint(`\t${h}`));
+
+  navigator.clipboard.writeText(
+    hops.reduce((acc, curr) => `${acc}connect ${curr}; `, "")
+  );
 }

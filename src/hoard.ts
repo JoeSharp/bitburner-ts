@@ -4,24 +4,39 @@ import {
   findStrategy,
   getShipsRequired,
   findTargets,
-  findContracts,
-  solveContract,
 } from "utils";
 
 /** @param {NS} ns */
 export async function main(ns: NS) {
-  const TICK_MS = 400;
-  const THREADS_PER = 10;
+  const TICK_MS = 500;
+  const THREADS_PER = 4;
   const ZOMBIE_SCRIPT = "zombie.js";
 
-  while (true) {
-    // Solve any contracts we can
-    const contracts = findContracts(ns);
-    contracts.forEach((c) => solveContract(ns, c));
+  ns.disableLog("getServerMaxMoney");
+  ns.disableLog("getServerRequiredHackingLevel");
+  ns.disableLog("getServerNumPortsRequired");
+  ns.disableLog("getServerSecurityLevel");
+  ns.disableLog("getServerMinSecurityLevel");
+  ns.disableLog("getServerMoneyAvailable");
+  ns.disableLog("getHackingLevel");
+  ns.disableLog("getServerMaxRam");
+  ns.disableLog("getServerUsedRam");
+  ns.disableLog("scan");
+  ns.disableLog("scp");
+  ns.disableLog("sleep");
+  ns.disableLog("exec");
 
+  const deployedShipsByTarget: Map<string, number[]> = new Map();
+
+  while (true) {
     // Now find zombies we can use to run our scripts
     const zombies = findZombies(ns, ZOMBIE_SCRIPT);
     const targets = findTargets(ns);
+
+    if (zombies.length <= 0) {
+      await ns.sleep(TICK_MS);
+      continue;
+    }
 
     ns.print(`Zombies Found ${zombies.length}`);
     zombies.forEach(({ host, threads }) =>
@@ -31,6 +46,21 @@ export async function main(ns: NS) {
     for (const target of targets) {
       if (zombies.length <= 0) {
         break;
+      }
+
+      // Ensure we have an entry for this target
+      let deployedShips: number[] =
+        deployedShipsByTarget
+          .get(target)
+          ?.filter((s) => ns.getRunningScript(s, target)) ?? [];
+
+      if (deployedShips.length > 0) {
+        ns.print(
+          `Ships already deployed against ${target}, ${deployedShips.join(
+            ","
+          )} skipping`
+        );
+        continue;
       }
 
       const strategy = findStrategy(ns, target);
@@ -49,7 +79,8 @@ export async function main(ns: NS) {
               `Running Ship ${ship} on ${zombie.host} with threads ${threads}`
             );
 
-            ns.exec(ZOMBIE_SCRIPT, zombie.host, threads, ...ship);
+            const pid = ns.exec(ZOMBIE_SCRIPT, zombie.host, threads, ...ship);
+            deployedShips.push(pid);
 
             zombie.threads -= threads;
             threadsRemaining -= threads;
@@ -62,6 +93,8 @@ export async function main(ns: NS) {
           }
         }
       });
+
+      deployedShipsByTarget.set(target, deployedShips);
     }
 
     await ns.sleep(TICK_MS);

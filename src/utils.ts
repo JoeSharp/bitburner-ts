@@ -3,6 +3,11 @@ import solvers from "./contracts/solvers/index";
 import ContractRecord from "./contracts/ContractRecord";
 
 /** @param {NS} ns */
+export function canHack(ns: NS, host: string) {
+  return crack(ns, host) && ns.getServerMaxMoney(host) > 0;
+}
+
+/** @param {NS} ns */
 export function findHosts(ns: NS) {
   const here = ns.getHostname();
   const allHosts = ns.scan();
@@ -22,12 +27,6 @@ export function findHosts(ns: NS) {
         queue.push(s);
       });
   }
-
-  ns.print("Found Hosts");
-  allHosts.forEach((h) => {
-    ns.print(`\t${h}`);
-    ns.print(`\tVia: ${foundVia.get(h)}`);
-  });
 
   return {
     allHosts,
@@ -82,7 +81,8 @@ export function findTargets(ns: NS) {
   return allHosts
     .filter((h) => ns.getServerRequiredHackingLevel(h) <= ns.getHackingLevel())
     .filter((h) => ns.getServerMaxMoney(h) > 0)
-    .filter((h) => ns.hasRootAccess(h));
+    .filter((h) => ns.hasRootAccess(h))
+    .sort((a, b) => ns.getServerMaxMoney(b) - ns.getServerMaxMoney(a));
 }
 
 /** @param {NS} ns */
