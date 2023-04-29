@@ -9,11 +9,11 @@ import {
 
 /** @param {NS} ns */
 export async function main(ns: NS) {
-  const ZOMBIE_SCRIPT = "hackSelf.js";
+  const ZOMBIE_SCRIPT = "justHackSelf.js";
   const [homeReserveRam] = ns.args as [number];
 
   while (true) {
-    const altTarget = findTargets(ns)[0];
+    const [altTarget] = findTargets(ns)[0];
 
     findZombies(ns, ZOMBIE_SCRIPT, homeReserveRam).forEach((zombie) => {
       const target = canHack(ns, zombie.host) ? zombie.host : altTarget;

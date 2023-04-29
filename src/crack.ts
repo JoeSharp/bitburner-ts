@@ -53,15 +53,21 @@ export async function main(ns: NS) {
     )[0];
 
   ns.tprint("Machines We Have Root on");
-  hackedZombies.filter(ns.hasRootAccess).forEach((zombie) => {
-    ns.tprint(`Potential Zombie ${zombie}`);
-    ns.tprint(`\tFound via ${foundVia.get(zombie)}`);
-    ns.tprint(
-      `\tRequires Hacking: ${ns.getServerRequiredHackingLevel(zombie)}`
+  hackedZombies
+    .filter(ns.hasRootAccess)
+    .map((zombie) => ({
+      zombie,
+      via: foundVia.get(zombie),
+      requiredHacking: ns.getServerRequiredHackingLevel(zombie),
+      numPortsRequired: ns.getServerNumPortsRequired(zombie),
+      moneyAvailable: ns.getServerMoneyAvailable(zombie),
+    }))
+    .forEach(
+      ({ zombie, via, requiredHacking, numPortsRequired, moneyAvailable }) =>
+        ns.tprint(
+          `${zombie}, via: ${via}, hackLvl: ${requiredHacking}, ports: ${numPortsRequired}, money: ${moneyAvailable}`
+        )
     );
-    ns.tprint(`\tRequires Ports: ${ns.getServerNumPortsRequired(zombie)}`);
-    ns.tprint(`\tMoney Available: ${ns.getServerMoneyAvailable(zombie)}`);
-  });
 
   if (newlyHacked.length > 0) {
     ns.tprint(`Newly hacked servers (${newlyHacked.length})`);

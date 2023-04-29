@@ -9,8 +9,10 @@ import {
 /** @param {NS} ns */
 export async function main(ns: NS) {
   const TICK_MS = 500;
-  const THREADS_PER = 4;
+  const THREADS_PER = 10;
   const ZOMBIE_SCRIPT = "zombie.js";
+
+  const [homeReserveRam] = ns.args as [number];
 
   ns.disableLog("getServerMaxMoney");
   ns.disableLog("getServerRequiredHackingLevel");
@@ -30,7 +32,7 @@ export async function main(ns: NS) {
 
   while (true) {
     // Now find zombies we can use to run our scripts
-    const zombies = findZombies(ns, ZOMBIE_SCRIPT);
+    const zombies = findZombies(ns, ZOMBIE_SCRIPT, homeReserveRam);
     const targets = findTargets(ns);
 
     if (zombies.length <= 0) {

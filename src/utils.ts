@@ -85,8 +85,14 @@ export function findTargets(ns: NS) {
     .sort((a, b) => ns.getServerMaxMoney(b) - ns.getServerMaxMoney(a));
 }
 
+const DEFAULT_HOME_RESERVE_RAM = 8;
+
 /** @param {NS} ns */
-export function findZombies(ns: NS, script: string) {
+export function findZombies(
+  ns: NS,
+  script: string,
+  homeReserveRam: number = DEFAULT_HOME_RESERVE_RAM
+) {
   const { allHosts } = findHosts(ns);
 
   return allHosts
@@ -98,7 +104,7 @@ export function findZombies(ns: NS, script: string) {
       // Now we can calculate threads
       return {
         host,
-        threads: ramThreads(ns, script, host),
+        threads: ramThreads(ns, script, host, homeReserveRam),
       };
     })
     .filter(({ threads }) => threads > 0);
@@ -113,11 +119,11 @@ export function findStrategy(ns: NS, target: string) {
   const maxSecurity = ns.getServerMinSecurityLevel(target) * 1.3;
 
   if (securityLevel > maxSecurity) {
-    return "www";
+    return "wwwhh";
   } else if (moneyAvailable < minMoney) {
-    return "ggww";
+    return "ggwwhh";
   } else {
-    return "wgwh";
+    return "wgwhh";
   }
 }
 
@@ -230,8 +236,17 @@ export function enoughRam(ns: NS, script: string, server: string) {
   return freeRam >= scriptRam;
 }
 
-export function ramThreads(ns: NS, script: string, server: string) {
-  const freeRam = ns.getServerMaxRam(server) - ns.getServerUsedRam(server);
+export function ramThreads(
+  ns: NS,
+  script: string,
+  server: string,
+  homeReserveRam: number = DEFAULT_HOME_RESERVE_RAM
+) {
+  let freeRam = ns.getServerMaxRam(server) - ns.getServerUsedRam(server);
+  if (server == ns.getHostname()) {
+    freeRam -= homeReserveRam;
+    freeRam = Math.max(freeRam, 0);
+  }
   const scriptRam = ns.getScriptRam(script, server);
   return Math.floor(freeRam / scriptRam);
 }
